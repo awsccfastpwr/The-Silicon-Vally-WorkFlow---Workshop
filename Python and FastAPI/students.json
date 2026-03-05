@@ -1,0 +1,56 @@
+{
+    "3": {
+        "name": "Carol White",
+        "age": 19,
+        "major": "Business"
+    },
+    "4": {
+        "name": "David Brown",
+        "age": 22,
+        "major": "Mathematics"
+    },
+    "5": {
+        "name": "Emma Davis",
+        "age": 20,
+        "major": "Biology"
+    },
+    "6": {
+        "name": "Frank Miller",
+        "age": 21,
+        "major": "Physics"
+    },
+    "7": {
+        "name": "Grace Lee",
+        "age": 19,
+        "major": "Chemistry"
+    },
+    "8": {
+        "name": "Henry Wilson",
+        "age": 23,
+        "major": "History"
+    },
+    "9": {
+        "id": 9,
+        "name": "raees",
+        "age": 20,
+        "major": "AI"
+    },
+    "10": {
+        "id": 10,
+        "name": "raees",
+        "age": 20,
+        "major": "AI"
+    },
+    "11": {
+        "id": 11,
+        "name": "raees",
+        "age": 20,
+        "major": "AI"
+    },
+    "12": {
+        "id": 12,
+        "name": "raees",
+        "age": 20,
+        "major": "AI"
+    }
+}
