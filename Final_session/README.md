@@ -8,7 +8,7 @@ This project is a **Python FastAPI sentiment API** that:
 
 ---
 
-
+Live: https://g84q7g75vk.execute-api.eu-north-1.amazonaws.com/
 
 ## What this project does
 
