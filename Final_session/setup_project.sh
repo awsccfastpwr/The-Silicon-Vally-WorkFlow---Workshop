@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
-AWS_REGION="${AWS_REGION:-us-east-1}"
+AWS_REGION="${AWS_REGION:-eu-north-1}"
 ECR_REPO="${ECR_REPO:-sentiment-api}"
 IMAGE_TAG="${IMAGE_TAG:-v1}"
 LAMBDA_FUNCTION="${LAMBDA_FUNCTION:-sentiment-api-fn}"
@@ -172,12 +172,56 @@ build_and_push_image() {
   aws ecr get-login-password --region "$AWS_REGION" \
     | "${DOCKER_CMD[@]}" login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com" >/dev/null
 
-  log "Building Docker image"
-  "${DOCKER_CMD[@]}" build -t "$ECR_REPO:$IMAGE_TAG" .
+  log "Building Docker image (Lambda-compatible manifest)"
+  if ! "${DOCKER_CMD[@]}" build \
+    --platform linux/amd64 \
+    --provenance=false \
+    --sbom=false \
+    -t "$ECR_REPO:$IMAGE_TAG" .; then
+    warn "Modern BuildKit flags not supported by this Docker version. Retrying with classic builder..."
+    DOCKER_BUILDKIT=0 "${DOCKER_CMD[@]}" build -t "$ECR_REPO:$IMAGE_TAG" .
+  fi
 
   log "Tagging and pushing image: $IMAGE_URI"
   "${DOCKER_CMD[@]}" tag "$ECR_REPO:$IMAGE_TAG" "$IMAGE_URI"
   "${DOCKER_CMD[@]}" push "$IMAGE_URI"
+}
+
+wait_for_lambda_ready() {
+  local max_attempts=60
+  local attempt=1
+  local state
+  local update_status
+  local state_reason
+  local update_reason
+
+  log "Waiting for Lambda to become ready..."
+  while (( attempt <= max_attempts )); do
+    read -r state update_status state_reason update_reason < <(
+      aws lambda get-function-configuration \
+        --function-name "$LAMBDA_FUNCTION" \
+        --region "$AWS_REGION" \
+        --query '[State,LastUpdateStatus,StateReason,LastUpdateStatusReason]' \
+        --output text 2>/dev/null || echo "Unknown Unknown - -"
+    )
+
+    if [[ "$state" == "Active" && "$update_status" != "InProgress" ]]; then
+      return 0
+    fi
+
+    if [[ "$state" == "Failed" || "$update_status" == "Failed" ]]; then
+      err "Lambda failed to become ready. State=$state UpdateStatus=$update_status"
+      err "StateReason=$state_reason"
+      err "UpdateReason=$update_reason"
+      exit 1
+    fi
+
+    sleep 5
+    ((attempt++))
+  done
+
+  err "Timed out waiting for Lambda readiness."
+  exit 1
 }
 
 create_or_update_lambda() {
@@ -199,12 +243,15 @@ create_or_update_lambda() {
       --region "$AWS_REGION" >/dev/null
   fi
 
+  wait_for_lambda_ready
+
   if [[ -n "$GROQ_API_KEY" ]]; then
     log "Setting Lambda environment variable: GROQ_API_KEY"
     aws lambda update-function-configuration \
       --function-name "$LAMBDA_FUNCTION" \
       --environment "Variables={GROQ_API_KEY=$GROQ_API_KEY}" \
       --region "$AWS_REGION" >/dev/null
+    wait_for_lambda_ready
   fi
 }
 
