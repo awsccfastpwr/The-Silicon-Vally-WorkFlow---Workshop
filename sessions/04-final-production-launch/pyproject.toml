@@ -1,7 +1,7 @@
 [project]
 name = "sentiment-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Containerized FastAPI sentiment API deployment demo"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

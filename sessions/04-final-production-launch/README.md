@@ -8,7 +8,7 @@ This project is a **Python FastAPI sentiment API** that:
 
 ---
 
-Live: https://g84q7g75vk.execute-api.eu-north-1.amazonaws.com/
+Live endpoint: replace this with your own API Gateway URL after deployment.
 
 ## What this project does
 
@@ -73,7 +73,7 @@ Explanation:
 ## Run locally (optional)
 
 ```bash
-cd /home/raqeeb/AWS_CLub/ML_sesssion/sentiment-api
+cd sessions/04-final-production-launch
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
@@ -94,7 +94,7 @@ export GROQ_API_KEY="your_groq_api_key"
 ### One-command setup script
 
 ```bash
-cd /home/raqeeb/AWS_CLub/ML_sesssion/sentiment-api
+cd sessions/04-final-production-launch
 ./setup_project.sh
 ```
 

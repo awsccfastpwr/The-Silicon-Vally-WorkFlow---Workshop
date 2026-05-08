@@ -1,0 +1,7 @@
+cryptography
+openpyxl
+pdf2image
+pillow
+pypdf
+qrcode[pil]
+reportlab
